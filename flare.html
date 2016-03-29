@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <!-- <link type="text/css" rel="stylesheet" href="style.css"/> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="d3/d3.js"></script>
+    <script type="text/javascript" src="d3/d3.geom.js"></script>
+    <script type="text/javascript" src="d3/d3.layout.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="d3/fisheye.js"></script>
+    <style type="text/css">
+      .bottomleft{
+        position: fixed;
+        color: #FF5722;
+        bottom: 0;
+        left: 0;
+        padding-left: 15px;
+      }
+      .topleft{
+        position: fixed;
+        color: #FF5722;
+        top: 0;
+        left: 0;
+        padding-top: 50px;
+        padding-left: 15px;
+      }
+      .pause-text{
+        position: fixed;
+        bottom: 2%;
+        left: 50%;
+        margin-left: -28px;
+        color: white;
+        opacity: 0;
+      }
+      #menu{
+  background-color: #eeeeee;
+  height: 100px;
+  float: left;
+  font-family: Verdana;
+  font-size: 12px;
+}
+ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+  }
+
+  li {
+      float: right;
+  }
+
+  li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+  }
+  li a:hover {
+      background-color: #111;
+  }
+  .draw{
+    top:100px;
+  }
+    </style>
+
+  </head>
+  <body>
+    <div>
+  <ul>
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="nodes.html">Circles Overlap</a></li>
+    <li><a href="flare.html">Flare</a></li>
+  </ul>
+</div>
+<div class="draw"></div>
+<div class="topleft">
+      <table class="table">
+        <caption>Graph Info
+        </caption>
+        <tbody>
+          <tr>
+            <td>Fisheye</td>
+            <td><span id="paused1" class="label label-success"></span><span id="paused2" class="label label-danger">disabled</span></td>
+          </tr>
+          <tr>
+            <td>Tags</td>
+            <td><span id="tag1" class="label label-success"></span><span id="tag2" class="label label-danger">disbaled</span></td>
+          </tr>
+<!--           <tr>
+            <td>Click Mode</td>
+            <td><span id="click1" class="label label-primary"></span><span id="click2" class="label label-warning">Collaps/Expand</span></td>
+          </tr> -->
+        </tbody>
+      </table>
+    </div>
+<script>
+
+var width = window.innerWidth-20,
+    height = window.innerHeight-60,
+    root;
+
+    var paused = false,
+      showTag = false,
+      mouseMode = false;
+
+var force = d3.layout.force()
+    .linkDistance(80)
+    .charge(-120)
+    .gravity(.05)
+    .size([width, height])
+    .on("tick", tick);
+
+var fisheye = d3.fisheye.circular()
+    .radius(200)
+    .distortion(2);
+
+var svg = d3.select(".draw").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+  .append("g")
+    .call(d3.behavior.zoom().scaleExtent([0, 8]).on("zoom", zoom))
+  .append("g");
+
+svg.append("rect")
+    .attr("class", "overlay")
+    .attr("x",-999999)
+    .attr("y",-999999)
+    .attr("width", 999999*2)
+    .attr("height", 999999*2)
+    .style("fill", "#EEEEEE");
+
+
+
+var link = svg.selectAll(".link"),
+    node = svg.selectAll(".node");
+
+d3.json("graph.json", function(error, json) {
+  if (error) throw error;
+
+  root = json;
+  update();
+  closeAll();
+})
+
+function closeAll(){
+  function closeChildren(node){
+    if(node.children) node.children.forEach(closeChildren);
+    else
+      return;
+    node._children = node.children;
+    node.children = null;
+  }
+  closeChildren(root);
+}
+
+var ttt = true;
+function update(){
+  // var n = data.children.children.length;
+  // console.log(n);
+  var nodes = flatten(root),
+      links = d3.layout.tree().links(nodes);
+
+function idFindDeep(id){for(var x=0;x<nodes.length;x++){if(nodes[x].id==id) return nodes[x].depth}}
+
+  // Restart the force layout.
+  force
+      .nodes(nodes)
+      .links(links)
+      .start();
+  // for (var i = 4437; i > 0; --i) force.tick();
+  //   force.stop();
+
+  // Update links.
+  link = link.data(links, function(d) { return d.target.id; });
+
+  link.exit().remove();
+
+  link.enter().insert("line", ".node")
+      .attr("class", "link")
+      .attr("stroke-width",3)
+      .attr("stroke", "#303841");
+
+function getLinkByTarget(idd){link.each(function(d){if(d.target.id==idd)return d.target});}
+
+function removeLink(source,target){
+    for(var i=0;i<links.length;i++)
+    {
+        if(links[i].source.id == source && links[i].target.id == target)
+        {
+            links.splice(i,1);
+            break;
+        }
+    }
+};
+
+var findNodeIndex = function(id) {
+    for (var i=0;i<nodes.length;i++) {
+        if (nodes[i].id==id){
+            return i;
+        }
+        };
+};
+
+var findNode = function(id) {
+    for (var i in nodes) {
+        if (nodes[i]["id"] === id) return nodes[i];};
+};
+// while(ttt){
+// // links.push({"source":findNode(715),"target":findNode(3421)});
+
+//   for(var i=0;i<links.length;i++)
+//   {
+//       if(links[i].target.id == 715)
+//       {
+//           // links.push({"source":findNode(715),"target":findNode(3421)});
+//           // links.splice(i,1);
+//           // nodes.splice(findNodeIndex(715),1);
+//           // break;
+//           // console.log(links[i]);
+//           for(var j=0;j<links.length;j++)
+//           {
+//               if(links[j].target.id == 3421)
+//               {
+//                 while(ttt){
+//                   // links[i].target = links[j].target;
+//                   // links.push(link[i]);
+//                   // links[links.length+1].source = links[j].target;
+//                   console.log(nodes[0]);
+//                   links.push({"source":links[i].target,"target":links[j].target});
+//                   // console.log(links[j]);
+//                   ttt = false;
+//                   // nodes.splice(findNodeIndex(715),1);
+//                   update();
+//                 }
+//               }
+//           }
+//       }
+//   }
+// }
+
+  // Update nodes.
+  node = node.data(nodes, function(d) { return d.id; });
+
+  node.exit().remove();
+
+  var nodeEnter = node.enter().append("g")
+      .attr("class", "node")
+      .on("click", click);
+
+  nodeEnter.append("circle")
+      .attr("id", function(d) { return d.id; })
+      .attr("class", function(d) { return "depth"+idFindDeep(d.id); })
+      .attr("r", function(d){
+        if(idFindDeep(d.id)==0) return 25;
+        else if(idFindDeep(d.id)==1) return 20;
+        else if(idFindDeep(d.id)==2) return 10;
+        else return 12
+      });
+
+// for(var ii =1; ii<nodes.length;ii++){
+//   $('#'+ii).addClass("test");
+// }
+
+if(showTag){
+    node.append("text")
+        .attr("dy", ".35em")
+        .attr("class", "tag")
+        .text(function(d) { return d.name+"/"+d.id; });
+      }
+
+  node.select("circle")
+      .style("fill", function(d){
+        if(idFindDeep(d.id)==0) return "#80D6FF";
+        else if(idFindDeep(d.id)==1) return "#EDF798";
+        else if(idFindDeep(d.id)==2) return "#FAB57A";
+        else return "#F06868"
+      });
+
+  if (paused) {
+    force.stop();
+  }
+
+  svg.on("mousemove", function() {
+  fisheye.focus(d3.mouse(this));
+
+  node.each(function(d) { d.fisheye = fisheye(d); })
+      .attr("transform", function(d) { return "translate(" + fisheye(d).x + "," + fisheye(d).y + ")scale(" + d.fisheye.z * 1 + ")"; })
+      // .attr("transform", function(d) { return "scale(" + d.fisheye.z * 4.5 + ")"; })
+      // .attr("r", function(d) { return d.fisheye.z * 8; });
+
+  
+  link.attr("x1", function(d) { return fisheye(d.source).x; })
+      .attr("y1", function(d) { return fisheye(d.source).y; })
+      .attr("x2", function(d) { return fisheye(d.target).x; })
+      .attr("y2", function(d) { return fisheye(d.target).y; });
+});
+
+
+}//update
+
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+
+    e = e || window.event;
+
+    if (e.keyCode == '80') {
+        // P
+        if(paused==false){
+          $('#paused1').text("enabled");
+          $('#paused2').text("");
+          $('.pause-text').css('opacity', '1');
+          paused = true;
+          update();
+        }else{
+          $('#paused1').text("");
+          $('#paused2').text("disabled");
+          $('.pause-text').css('opacity', '0');
+          paused = false;
+          update();
+        }
+    }
+    else if (e.keyCode == '84') {
+        // T
+        if(showTag==false){
+          $('#tag1').text("enabled");
+          $('#tag2').text("");
+          showTag = true;
+          update();
+        }else{
+          $('#tag1').text("");
+          $('#tag2').text("disabled");
+          showTag = false;
+          $('.tag').remove();
+          // update();
+        }
+        if(paused){
+          force.stop();
+        }
+    }
+    // else if (e.keyCode == '67') {
+    //    // C
+    //     if(mouseMode==false){
+    //       $('#click1').text("Find Mutual Friends");
+    //       $('#click2').text("");
+    //       mouseMode = true;
+    //     }else{
+    //       $('#click1').text("");
+    //       $('#click2').text("Collaps/Expand");
+    //       mouseMode = false;
+    //       // update();
+    //     }
+    // }
+    // else if (e.keyCode == '39') {
+    //    // right arrow
+    // }
+
+}
+
+
+function tick() {
+  link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+
+  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+
+function color(d) {
+  return d._children ? "#3182bd" // collapsed package
+      : d.children ? "#c6dbef" // expanded package
+      : "#fd8d3c"; // leaf node
+}
+
+// Toggle children on click.
+function click(d) {
+  if (d3.event.defaultPrevented) return; // ignore drag
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else {
+    d.children = d._children;
+    d._children = null;
+  }
+  update();
+}
+
+
+
+// Returns a list of all nodes under the root.
+function flatten(root) {
+  var i = 0, depth=0;
+  var nodes = [];
+
+  function recurse(node, deep) {
+    if (node.children) node.children.forEach(function (node){recurse(node, deep+1)});
+    if (!node.id) node.id = i++;
+    node.depth = deep;
+    nodes.push(node);
+  }
+
+  recurse(root, depth);
+  return nodes;
+}
+
+function zoom() {
+  svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+</script>
+<div style="color: red;" class="pause-text"><h3><span class="label label-danger">Paused</span></h3></div>
+<div class="bottomleft">
+  <table class="table">
+    <caption>Keyboard instructions</caption>
+    <tbody>
+      <tr>
+        <td>P</td>
+        <td>Pause</td>
+      </tr>
+      <tr>
+        <td>T</td>
+        <td>Tags On/Off</td>
+      </tr>
+<!--       <tr>
+        <td>C</td>
+        <td>Change mouse modes</td>
+      </tr> -->
+    </tbody>
+  </table>
+</div>
+
+  </body>
+</html>

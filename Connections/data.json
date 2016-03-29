@@ -1,0 +1,271 @@
+{
+  "nodes": [
+    {
+      "group": 1,
+      "name": "Person1 (0)"
+    },
+    {
+      "group": 2,
+      "name": "Person2 (107)"
+    },
+    {
+      "group": 3,
+      "name": "Person3 (348)"
+    },
+    {
+      "group": 4,
+      "name": "Person4 (414)"
+    },
+    {
+      "group": 5,
+      "name": "Person5 (686)"
+    },
+    {
+      "group": 6,
+      "name": "Person6 (698)"
+    },
+    {
+      "group": 7,
+      "name": "Person7 (1684)"
+    },
+    {
+      "group": 8,
+      "name": "Person8 (1912)"
+    },
+    {
+      "group": 9,
+      "name": "Person9 (3437)"
+    },
+    {
+      "group": 10,
+      "name": "Person10 (3980)"
+    }
+  ],
+  "edges": [
+    {
+      "target": 1,
+      "value": 2,
+      "source": 0
+    },
+    {
+      "target": 2,
+      "value": 3,
+      "source": 0
+    },
+    {
+      "target": 3,
+      "value": 1,
+      "source": 0
+    },
+    {
+      "target": 4,
+      "value": 0,
+      "source": 0
+    },
+    {
+      "target": 5,
+      "value": 0,
+      "source": 0
+    },
+    {
+      "target": 6,
+      "value": 2,
+      "source": 0
+    },
+    {
+      "target": 7,
+      "value": 2,
+      "source": 0
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 0
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 0
+    },
+    {
+      "target": 2,
+      "value": 11,
+      "source": 1
+    },
+    {
+      "target": 3,
+      "value": 9,
+      "source": 1
+    },
+    {
+      "target": 4,
+      "value": 0,
+      "source": 1
+    },
+    {
+      "target": 5,
+      "value": 0,
+      "source": 1
+    },
+    {
+      "target": 6,
+      "value": 12,
+      "source": 1
+    },
+    {
+      "target": 7,
+      "value": 3,
+      "source": 1
+    },
+    {
+      "target": 8,
+      "value": 1,
+      "source": 1
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 1
+    },
+    {
+      "target": 3,
+      "value": 44,
+      "source": 2
+    },
+    {
+      "target": 4,
+      "value": 0,
+      "source": 2
+    },
+    {
+      "target": 5,
+      "value": 0,
+      "source": 2
+    },
+    {
+      "target": 6,
+      "value": 0,
+      "source": 2
+    },
+    {
+      "target": 7,
+      "value": 2,
+      "source": 2
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 2
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 2
+    },
+    {
+      "target": 4,
+      "value": 0,
+      "source": 3
+    },
+    {
+      "target": 5,
+      "value": 0,
+      "source": 3
+    },
+    {
+      "target": 6,
+      "value": 1,
+      "source": 3
+    },
+    {
+      "target": 7,
+      "value": 2,
+      "source": 3
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 3
+    },
+    {
+      "target": 9,
+      "value": 1,
+      "source": 3
+    },
+    {
+      "target": 5,
+      "value": 23,
+      "source": 4
+    },
+    {
+      "target": 6,
+      "value": 0,
+      "source": 4
+    },
+    {
+      "target": 7,
+      "value": 0,
+      "source": 4
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 4
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 4
+    },
+    {
+      "target": 6,
+      "value": 1,
+      "source": 5
+    },
+    {
+      "target": 7,
+      "value": 0,
+      "source": 5
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 5
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 5
+    },
+    {
+      "target": 7,
+      "value": 1,
+      "source": 6
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 6
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 6
+    },
+    {
+      "target": 8,
+      "value": 0,
+      "source": 7
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 7
+    },
+    {
+      "target": 9,
+      "value": 0,
+      "source": 8
+    }
+  ]
+}

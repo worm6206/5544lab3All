@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+<script src="d3/d3.js"></script>
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+  }
+
+  li {
+      float: right;
+  }
+
+  li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+  }
+  li a:hover {
+      background-color: #111;
+  }
+
+</style>
+</head>
+
+<body>
+  <div>
+  <ul>
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="nodes.html">Circles Overlap</a></li>
+    <li><a href="flare.html">Flare</a></li>
+  </ul>
+</div>
+<div >
+  <div style="float:left">
+   <script type = "text/javascript">
+
+
+Array.prototype.inArray = function(comparer) { 
+    for(var i=0; i < this.length; i++) { 
+        if(comparer(this[i])) return true; 
+    }
+    return false; 
+}; 
+
+Array.prototype.pushIfNotExist = function(element, comparer) { 
+    if (!this.inArray(comparer)) {
+        this.push(element);
+    }
+};
+
+function arrayObjectIndexOf(myArray, searchTerm, property) {
+    for(var i = 0, len = myArray.length; i < len; i++) {
+        if (myArray[i][property] === searchTerm) return i;
+    }
+    return -1;
+  }
+
+var width = 250,
+    height = 500;
+
+var svg = d3.select('body').append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+
+
+
+var dataset = d3.text("nodes10.csv", function(text1) {
+    
+   
+                
+                data = d3.csv.parseRows(text1);
+                var nodes =[];
+                nodes[0] = {"name":0,"group":0};
+                nodes[1] = {"name":107,"group":1};
+                nodes[2] = {"name":348,"group":2};
+                nodes[3] = {"name":414,"group":3};
+                nodes[4] = {"name":686,"group":4};
+                nodes[5] = {"name":698,"group":5};
+                nodes[6] = {"name":1684,"group":6};
+                nodes[7] = {"name":1912,"group":7};
+                nodes[8] = {"name":3437,"group":8};
+                nodes[9] = {"name":3980,"group":9};
+                var links=[];
+                for (i=0; i<data.length; i++){
+                    
+                     lval = {};
+                     lval.target = arrayObjectIndexOf(nodes,+data[i][0],"name");
+                     lval.source = arrayObjectIndexOf(nodes,+data[i][1],"name");
+                     console.log(+data[i][0], lval.target);
+                     console.log(+data[i][1], lval.source);
+
+                    links.push(lval);
+                    
+
+                }
+
+                
+              
+                
+                
+
+
+            //MIKE BOSTOCK
+
+            var color = d3.scale.category10();
+
+            var force = d3.layout.force()
+                .charge(-120)
+                .linkDistance(30)
+                .size([width, height]);
+
+            var svg = d3.select("body").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+
+              force
+                  .nodes(nodes)
+                  .links(links)
+                  .start();
+
+              var link = svg.selectAll(".link")
+                  .data(links)
+                .enter().append("line")
+                  .attr("class", "link")
+                  .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+              var node = svg.selectAll(".node")
+                  .data(nodes)
+                .enter().append("circle")
+                  .attr("class", "node")
+                  .attr("r", 10)
+                  .style("fill", function(d) { return color(d.group); })
+                  .call(force.drag);
+
+              node.append("title")
+                  .text(function(d) { return d.name; });
+
+              force.on("tick", function() {
+                link.attr("x1", function(d) { return d.source.x; })
+                    .attr("y1", function(d) { return d.source.y; })
+                    .attr("x2", function(d) { return d.target.x; })
+                    .attr("y2", function(d) { return d.target.y; });
+
+                node.attr("cx", function(d) { return d.x; })
+                    .attr("cy", function(d) { return d.y; });
+            });
+        });
+
+
+
+        
+
+    </script>
+  <div>
+<div style="float:left">
+  <script>
+
+var width = 500,
+    height = 500;
+
+var color = d3.scale.category10();
+
+var force = d3.layout.force()
+    .charge(-80)
+    .linkDistance(250)
+    .size([width, height]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+d3.json("Connections/data.json", function(error, graph) {
+  if (error) throw error;
+  
+  
+  force
+      .nodes(graph.nodes)
+      .links(graph.edges)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.edges)
+    .enter().append("line")
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+    .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", 10)
+      .style("fill", function(d) { return color(d.group); })
+      .call(force.drag);
+    
+  var hover = svg.selectAll("circle")
+    .on("mouseover", function(d,i){
+    d3.select(this)
+    .attr("r",20)
+    .append("svg:title")
+      .text(function(d) { return (d.name); }) })
+    .on("mouseout", function(d,i){
+    d3.select(this)
+    .attr("r",10) });
+    
+  var hover2 = svg.selectAll("line")
+    .on("mouseover", function(d,i){
+    d3.select(this)
+    .append("svg:title")
+      .text(function(d) { return d.value; }) });
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  });
+});
+</script>
+  </div>
+</div>
+</body>
+</html>

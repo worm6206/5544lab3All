@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+#menu{
+  background-color: #eeeeee;
+  height: 100vh;
+  float: left;
+  font-family: Verdana;
+  font-variant: small-caps;
+  font-size: 12px;
+  padding: 15px;
+}
+ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+  }
+
+  li {
+      float: right;
+  }
+
+  li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+  }
+  li a:hover {
+      background-color: #111;
+  }
+
+</style>
+<script src="d3/d3.js"></script>
+<script src = "jquery-1.11.1.js"></script>
+<body>
+
+<div>
+  <ul>
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="nodes.html">Circles Overlap</a></li>
+    <li><a href="flare.html">Flare</a></li>
+  </ul>
+</div>
+
+<div id="menu">
+  <br>
+    <b>Ego Node:</b> <br>
+    <input type="radio" name="ego" value="0" checked> 0 <br>
+    <input type="radio" name="ego" value="107" > 107 <br>
+    <input type="radio" name="ego" value="348" > 348 <br>
+    <input type="radio" name="ego" value="414" > 414 <br>
+    <input type="radio" name="ego" value="686" > 686 <br>
+    <input type="radio" name="ego" value="698" > 698 <br>
+    <input type="radio" name="ego" value="1684" > 1684 <br>
+    <input type="radio" name="ego" value="1912" > 1912 <br>
+    <input type="radio" name="ego" value="3437" > 3437 <br>
+    <input type="radio" name="ego" value="3980" > 3980 <br>
+    <br>
+    <b>Circle 1:</b> <input type="text" name="c1" id="c1" size="10" value="0"><br>
+    <b>Circle 2: </b><input type="text" name="c2" id="c2" size="10" value="11"><br>
+    <br>
+    <input name="updateButton" type="button" value="UPDATE" onclick="updateData()"/>
+
+
+ 
+</div>
+<div>
+
+<script>
+
+var width = 1000,
+    height = 500;
+
+var color = d3.scale.category20();
+
+
+
+var force = d3.layout.force()
+    .charge(-120)
+    .linkDistance(30)
+    .size([width, height]);
+
+
+var svg = d3.select("body").append("svg")
+
+svg.attr("width", width)
+    .attr("height", height);
+
+updateData();
+function updateData(){
+  d3.selectAll("svg > *").remove();
+
+var ego = $("input[name=ego]:checked").val();
+console.log(ego);
+var c1 = document.getElementById('c1').value;
+var c2 = document.getElementById('c2').value;
+if(parseInt(c1)>parseInt(c2)){ c1 = [c2, c2 = c1][0];}
+file = "data/"+ego+"-"+c1+"-"+c2+".json";
+console.log(file);
+d3.json(file, function(error, graph) {
+  if (error) throw error;
+
+  force
+      .nodes(graph.nodes)
+      .links(graph.links)
+      .start();
+
+  var link = svg.selectAll(".link")
+      .data(graph.links)
+    .enter().append("line")
+      .attr("class", "link")
+      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var node = svg.selectAll(".node")
+      .data(graph.nodes)
+    .enter().append("circle")
+      .attr("class", "node")
+      .attr("r", function(d,i){ if(i==0) return 15; else return 5;})
+      .style("fill", function(d) { return color(d.group); })
+      .call(force.drag);
+
+  node.append("title")
+      .text(function(d) { return d.name; });
+
+  force.on("tick", function() {
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node.attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  });
+});
+}
+
+</script>
+</div>
+
+</body>
